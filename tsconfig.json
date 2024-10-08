@@ -9,6 +9,8 @@
         "moduleResolution": "node",
         "outDir": "dist",
         "removeComments": true,
+        "resolveJsonModule": true,
+        "skipLibCheck": true, // NOTE: Disabled because error with libs
         "strict": true,
         "paths": {
             "@/*": ["./src/*"]

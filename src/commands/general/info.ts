@@ -4,14 +4,15 @@ import { Command } from "../command";
 
 const command: Command = {
     name: "Info",
+    category: "General",
     help: "Get information about the bot",
     cmd: ["info", "about"],
     async execute(bot: SewentyBot, msg: Message, args: string[]) {
-        msg.reply(`
-        *Bot Info*
-        Name: SewentySewen
-        Version: 1.0.0
-        `)
+        await bot.replyMessage(msg, `
+            *Bot Info*
+            Name: ${bot.botName}
+            Version: ${bot.botVersion}
+        `);
     }
 }
 

@@ -4,7 +4,8 @@
   "description": "Testing bot for whatsapp",
   "main": "src/index.ts",
   "scripts": {
-    "start": "npm run build && node dist/index.js",
+    "freshstart": "npm run build && npm run start",
+    "start": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register dist/src/index.js",
     "build": "npx tsc"
   },
   "keywords": [
@@ -15,6 +16,7 @@
   "author": "sherwin-77",
   "license": "MPL-2.0",
   "dependencies": {
+    "dotenv": "^16.4.5",
     "qrcode-terminal": "^0.12.0",
     "whatsapp-web.js": "^1.26.0"
   },
@@ -22,6 +24,7 @@
     "@types/node-fetch": "^2.6.11",
     "@types/qrcode-terminal": "^0.12.2",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.6.2"
   },
   "engines": {

@@ -1,0 +1,8 @@
+{
+    "botName": "SewentyBot",
+    "botVersion": "1.0.0",
+    "settings": {
+        "timezone": "ASIA/JAKARTA",
+        "prefix": "s!"
+    }
+}

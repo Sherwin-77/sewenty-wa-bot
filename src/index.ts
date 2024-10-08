@@ -1,7 +1,10 @@
-import { GroupChat } from "whatsapp-web.js";
 import { SewentyBot } from "./lib/whatsapp/client";
+import 'dotenv/config';
 
 const client = new SewentyBot();
+
+client.bindEvents();
+client.initialize();
 
 // TODO: Subclass?
 // client.on("message", async msg => {

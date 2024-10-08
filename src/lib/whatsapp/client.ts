@@ -4,8 +4,14 @@ import path from "path";
 import fs from "fs";
 import { Command } from "@/commands/command";
 
+import config from "@/../config.json";
+
 export class SewentyBot extends BaseClient {
     commands: Command[];
+    mappedCommands: Map<string, Command>;
+    ownerNumber: string
+    botName: string;
+    botVersion: string;
     prefix: string;
 
     constructor() {
@@ -16,15 +22,75 @@ export class SewentyBot extends BaseClient {
             }
         });
         this.commands = [];
-        this.prefix = "!";
+        // TODO: Lookup by mapped commands
+        this.mappedCommands = new Map();
+        this.botName = config.botName;
+        this.botVersion = config.botVersion;
+        this.prefix = config.settings.prefix;
+        this.ownerNumber = process.env.OWNER_NUMBER;
+    }
+
+    async helpCommand(msg: Message, args: string[]) {
+        if (args.length > 1) {
+            const command = this.commands.find(c => c.name === args[1]);
+            if (command) {
+                const helpMsg = [
+                    `*${command.name}*`,
+                    command.help,
+                    `Usage: ${this.prefix}${command.cmd[0]}`,
+                ];
+                if (command.cmd.length > 1) {
+                    helpMsg.push(`Aliases: ${command.cmd.slice(1).join(', ')}`);
+                }
+
+                await this.replyMessage(msg, helpMsg.join('\n'));
+            } else {
+                await this.replyMessage(msg, `Command not found`);
+            }
+        } else {
+            const categories: Record<string, string[]> = {};
+            for(const command of this.commands) {
+                if (!categories[command.category || '']) {
+                    categories[command.category] = [];
+                }
+                categories[command.category].push(`${this.prefix}${command.cmd[0]} (${command.name}) - ${command.help}`);
+            }
+            const helpMsg = [
+                `*_${this.botName}_*`,
+                `For more information, type: ${this.prefix}help <command>`,
+                ...Object.entries(categories).map(([category, commands]) => `\n*${category}*\n${commands.join('\n')}`),
+            ];
+
+            await this.replyMessage(msg, helpMsg.join('\n'));
+        }
     }
 
     async handleMessage(msg: Message) {
-
+        if (! msg.body.startsWith(this.prefix)) return;
+        const args = msg.body.slice(this.prefix.length).trim().split(/ +/);
+        if (args.length < 1) return;
+        if (args[0] === 'help') {
+            await this.helpCommand(msg, args);
+            return;
+        }
+        const command = this.commands.find(c => c.cmd.includes(args[0]) && !c.isDisabled);
+        if (command) {
+            if (command.middlewares) {
+                for (const middleware of command.middlewares) {
+                    if (! await middleware(this, msg)) {
+                        return;
+                    }
+                }
+            }
+            command.execute(this, msg, args.slice(1));
+        } else {
+            msg.reply("Command not found");
+        }
     }
 
     async loadCommands() {
-        const commandsDir = path.join(__dirname, 'commands');
+        // TODO: Handle path
+        const commandsDir = path.join(__dirname, '..', '..', 'commands');
         const commands: Command[] = [];
     
         async function readCommands(dir: string) {
@@ -47,6 +113,10 @@ export class SewentyBot extends BaseClient {
     }
 
     bindEvents() {
+        this.on("loading_screen", (percent) => {
+            console.log(`${percent}% loaded`);            
+        })
+
         this.on("qr", (qr) => {
             // Generate and scan this code with your phone
             qrcode.generate(qr, {small: true}, (code: string) => {
@@ -62,9 +132,11 @@ export class SewentyBot extends BaseClient {
             console.error("AUTHENTICATION FAILURE: ", reason);
         });
 
-        this.on("ready", () => {
+        this.on("ready", async () => {
             console.log("Bot is ready!");
-            console.log("Whatsapp-Web version: ", this.getWWebVersion())
+            console.log("Whatsapp-Web version: ", await this.getWWebVersion())
+            await this.loadCommands();
+            console.log("Commands loaded");
         });
 
         this.on("disconnected", (reason) => {
@@ -75,4 +147,12 @@ export class SewentyBot extends BaseClient {
             this.handleMessage(msg);
         });
     }
+
+    async replyMessage(msg: Message, content: string) {
+        content = content.replace(/^ +/gm, '').trim()
+        if (content.length > 4096) {
+            content = content.slice(0, 4093) + "...";
+        }
+        await msg.reply(content);
+    } 
 }
