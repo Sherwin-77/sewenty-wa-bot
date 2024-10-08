@@ -2,7 +2,7 @@
 Another whatsapp (unofficial) bot created with [whatsapp-web.js](https://github.com/pedroslopez/whatsapp-web.js/) for educational purpose
 
 ## Quick Start
-Node JS V12+ required to run this
+Node JS V18+ required to run this
 
 Start the bot by running `npm start` and scan the QR code
 
