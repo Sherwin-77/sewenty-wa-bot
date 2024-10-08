@@ -42,6 +42,9 @@ export class SewentyBot extends BaseClient {
                 if (command.cmd.length > 1) {
                     helpMsg.push(`Aliases: ${command.cmd.slice(1).join(', ')}`);
                 }
+                if (command.usage) {
+                    helpMsg.push(`Usage: ${this.prefix}${command.usage}`);
+                }
 
                 await this.replyMessage(msg, helpMsg.join('\n'));
             } else {
@@ -50,6 +53,7 @@ export class SewentyBot extends BaseClient {
         } else {
             const categories: Record<string, string[]> = {};
             for(const command of this.commands) {
+                if (command.isHidden) continue;
                 if (!categories[command.category || '']) {
                     categories[command.category] = [];
                 }
@@ -77,12 +81,27 @@ export class SewentyBot extends BaseClient {
         if (command) {
             if (command.middlewares) {
                 for (const middleware of command.middlewares) {
-                    if (! await middleware(this, msg)) {
+                    try {
+                        if (! await middleware(this, msg)) {
+                            return;
+                        }
+                    } catch (error) {
+                        console.error("Middleware error: ", error);
                         return;
                     }
                 }
             }
-            command.execute(this, msg, args.slice(1));
+
+            try {
+                await command.execute(this, msg, args.slice(1));
+            } catch (error) {
+                console.error(error);
+                try {
+                    await this.replyMessage(msg, "An error occurred while executing the command");
+                } catch (error) {
+                    console.error("While handling error, another error occurred: ", error);
+                }
+            }
         } else {
             msg.reply("Command not found");
         }
@@ -114,7 +133,10 @@ export class SewentyBot extends BaseClient {
 
     bindEvents() {
         this.on("loading_screen", (percent) => {
-            console.log(`${percent}% loaded`);            
+            const progressBarLength = 20;
+            const filledLength = Math.round((parseInt(percent) / 100) * progressBarLength);
+            const progressBar = '█'.repeat(filledLength) + '-'.repeat(progressBarLength - filledLength);
+            console.log(`[${progressBar}] ${percent}% loaded`);
         })
 
         this.on("qr", (qr) => {

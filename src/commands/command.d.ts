@@ -4,6 +4,7 @@ import type { Message } from "whatsapp-web.js";
 export interface Command {
     name: string;
     help: string;
+    usage?: string;
     category: string;
     cmd: string[];
     middlewares?: ((bot: SewentyBot, msg: Message) => Promise<boolean>)[];
