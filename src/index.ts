@@ -4,6 +4,7 @@ import 'dotenv/config';
 const client = new SewentyBot();
 
 client.bindEvents();
+console.log("Starting...")
 client.initialize();
 
 // TODO: Subclass?

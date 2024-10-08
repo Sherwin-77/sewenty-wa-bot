@@ -15,7 +15,8 @@ const command: Command = {
         await bot.replyMessage(msg, `
             *Group Details*
             Name: ${chat.name}
-            Description: ${chat.description}
+            Description: 
+            \`\`\`${chat.description}\`\`\`
             Created At: ${chat.createdAt.toString()}
             Created By: ${chat.owner.user}
             Participant count: ${chat.participants.length}
