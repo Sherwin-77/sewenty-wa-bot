@@ -9,5 +9,5 @@ export interface Command {
     middlewares?: ((bot: SewentyBot, msg: Message) => Promise<boolean>)[];
     isDisabled?: boolean;
     isHidden?: boolean;
-    execute(bot: any, msg: any, args: string[]): void;
+    execute(bot: any, msg: any, args: string[]): Promise<void>;
 }
