@@ -4,7 +4,6 @@
   "description": "Testing bot for whatsapp",
   "main": "src/index.ts",
   "scripts": {
-    "freshstart": "npm run build && npm run start",
     "start": "npx cross-env TS_NODE_BASEURL=./dist node -r tsconfig-paths/register dist/src/index.js",
     "build": "npx tsc"
   },
