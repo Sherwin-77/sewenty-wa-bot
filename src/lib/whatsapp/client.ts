@@ -81,6 +81,7 @@ export class SewentyBot extends BaseClient {
     }
 
     async handleMessage(msg: Message) {
+        if (msg.fromMe) return;
         if (! msg.body.startsWith(this.prefix)) return;
         const args = msg.body.slice(this.prefix.length).trim().split(/ +/);
         if (args.length < 1) return;
