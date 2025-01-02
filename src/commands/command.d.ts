@@ -7,6 +7,7 @@ export interface Command {
     usage?: string;
     category: string;
     cmd: string[];
+    cooldownSeconds?: number;
     middlewares?: ((bot: SewentyBot, msg: Message) => Promise<boolean>)[];
     isDisabled?: boolean;
     isHidden?: boolean;
