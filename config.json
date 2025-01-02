@@ -4,5 +4,9 @@
     "settings": {
         "timezone": "ASIA/JAKARTA",
         "prefix": "s!"
+    },
+    "sticker": {
+        "defaultName": "Sticker",
+        "defaultAuthor": "SewentySewenBOT"
     }
 }
