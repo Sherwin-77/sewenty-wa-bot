@@ -8,11 +8,14 @@ import config from "@/../config.json";
 
 export class SewentyBot extends BaseClient {
     commands: Command[];
-    mappedCommands: Map<string, Command>;
+    mappedCommands: Record<string, Command>;
     ownerNumber: string
     botName: string;
     botVersion: string;
     prefix: string;
+    stickerName: string;
+    stickerAuthor: string;
+    cooldowns: Map<string, Set<string>>;
 
     constructor() {
         super({
@@ -22,17 +25,25 @@ export class SewentyBot extends BaseClient {
             }
         });
         this.commands = [];
-        // TODO: Lookup by mapped commands
-        this.mappedCommands = new Map();
+        this.mappedCommands = {};
         this.botName = config.botName;
         this.botVersion = config.botVersion;
         this.prefix = config.settings.prefix;
+        this.stickerName = config.sticker.defaultName;
+        this.stickerAuthor = config.sticker.defaultAuthor;
         this.ownerNumber = process.env.OWNER_NUMBER;
+        this.cooldowns = new Map()
+    }
+
+    getCommand(name: string) {
+        const command = this.mappedCommands[name];
+        if (!command || command.isDisabled) return null;
+        return command;
     }
 
     async helpCommand(msg: Message, args: string[]) {
         if (args.length > 1) {
-            const command = this.commands.find(c => c.name === args[1]);
+            const command = this.getCommand(args[1]);
             if (command) {
                 const helpMsg = [
                     `*${command.name}*`,
@@ -77,7 +88,7 @@ export class SewentyBot extends BaseClient {
             await this.helpCommand(msg, args);
             return;
         }
-        const command = this.commands.find(c => c.cmd.includes(args[0]) && !c.isDisabled);
+        const command = this.getCommand(args[0]);
         if (command) {
             if (command.middlewares) {
                 for (const middleware of command.middlewares) {
@@ -111,6 +122,7 @@ export class SewentyBot extends BaseClient {
         // TODO: Handle path
         const commandsDir = path.join(__dirname, '..', '..', 'commands');
         const commands: Command[] = [];
+        const mappedCommands: Record<string, Command> = {};
     
         async function readCommands(dir: string) {
             const files = await fs.promises.readdir(dir, { withFileTypes: true });
@@ -122,12 +134,24 @@ export class SewentyBot extends BaseClient {
                     await readCommands(fullPath);
                 } else if (file.isFile() && (file.name.endsWith('.js') || file.name.endsWith('.ts'))) {
                     const command = await import(fullPath);
+                    for(const nm of [command.default.name, ...command.default.cmd]) {
+                        if (mappedCommands[nm]) {
+                            throw new Error(`Command with name ${nm} already exists`);
+                        }
+                    }
+
+                    mappedCommands[command.default.name] = command.default;
+                    for (const cmd of command.default.cmd) {
+                        mappedCommands[cmd] = command.default;
+                    }
                     commands.push(command.default);
                 }
             }
         }
     
         await readCommands(commandsDir);
+    
+        this.mappedCommands = mappedCommands;
         this.commands = commands;
     }
 
