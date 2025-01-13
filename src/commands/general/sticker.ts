@@ -18,6 +18,10 @@ const command: Command = {
             await bot.sendMessage(msg.from, toDownload, { sendMediaAsSticker: true, stickerName: bot.stickerName, stickerAuthor: bot.stickerAuthor });
         } else {
             const quotedMsg = await msg.getQuotedMessage();
+            if (!quotedMsg) {
+                await bot.sendMessage(msg.from, "Please use command with image/video");
+                return
+            }
             if (!(quotedMsg.type == "image" || quotedMsg.type == "video")) return;
             const toDownload = await quotedMsg.downloadMedia();
             await bot.sendMessage(msg.from, toDownload, { sendMediaAsSticker: true, stickerName: bot.stickerName, stickerAuthor: bot.stickerAuthor });
