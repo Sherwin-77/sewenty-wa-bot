@@ -15,6 +15,10 @@ const command: Command = {
         chat.sendStateTyping();
         if (msg.type == "image" || msg.type == "video") {
             const toDownload = await msg.downloadMedia();
+            if (! toDownload) {
+                await bot.sendMessage(msg.from, "Failed to download media")
+                return
+            }
             await bot.sendMessage(msg.from, toDownload, { sendMediaAsSticker: true, stickerName: bot.stickerName, stickerAuthor: bot.stickerAuthor });
         } else {
             const quotedMsg = await msg.getQuotedMessage();
@@ -24,6 +28,10 @@ const command: Command = {
             }
             if (!(quotedMsg.type == "image" || quotedMsg.type == "video")) return;
             const toDownload = await quotedMsg.downloadMedia();
+            if (! toDownload) {
+                await bot.sendMessage(msg.from, "Failed to download media")
+                return
+            }
             await bot.sendMessage(msg.from, toDownload, { sendMediaAsSticker: true, stickerName: bot.stickerName, stickerAuthor: bot.stickerAuthor });
         }
     }   
